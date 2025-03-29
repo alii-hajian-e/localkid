@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -147,7 +148,7 @@ class BrickBreaker extends FlameGame with HasCollisionDetection, TapDetector {
     final distanceToPlayer = (playerBall.position - aiBall.position).length;
     final playerVelocity = playerBall.velocity.clone();
     final playerSpeed = playerVelocity.length;
-    final playerDirection = playerVelocity.normalized();
+    // final playerDirection = playerVelocity.normalized();
     final directionToPlayer = (playerBall.position - aiBall.position).normalized();
 
     // محاسبه زمان تقریبی برخورد با بازیکن
@@ -296,7 +297,6 @@ class BrickBreaker extends FlameGame with HasCollisionDetection, TapDetector {
     _lastAISpeed = finalSpeed;
   }
 
-// متد کمکی برای پیش‌بینی پیشرفته موقعیت بازیکن
   Vector2 _predictPlayerPosition(Ball playerBall, double time) {
     // کپی موقعیت و سرعت فعلی
     Vector2 predictedPosition = playerBall.position.clone();
@@ -359,20 +359,47 @@ class BrickBreaker extends FlameGame with HasCollisionDetection, TapDetector {
 
   void updateTurnIndicator() {
     final playerText = currentTurn == PlayerTurn.player1 ? 'Your Turn' : 'Enemy\'s Turn';
-    final playerColor = currentTurn == PlayerTurn.player1 ? Colors.blue : Colors.red;
+    final playerColor = currentTurn == PlayerTurn.player1 ? Colors.white : Colors.red;
 
     turnIndicator.text = playerText;
     turnIndicator.textRenderer = TextPaint(
       style: TextStyle(
         color: playerColor,
-        fontSize: 30,
+        fontSize: 40,
         fontWeight: FontWeight.bold,
       ),
     );
   }
 
   void updateScoreIndicator() {
-    scoreIndicator.text = 'You: $player1Score | Enemy: $player2Score';
+    scoreIndicator.textRenderer = TextPaint(
+      style: TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+        shadows: [
+          Shadow(
+            color: Colors.black.withOpacity(0.7),
+            blurRadius: 10,
+            offset: Offset(3, 3),
+          ),
+        ],
+      ),
+    );
+
+    scoreIndicator.text = '$player1Score - $player2Score';
+
+    // افکت پرش هنگام تغییر امتیاز
+    scoreIndicator.add(
+      ScaleEffect.by(
+        Vector2(1.2, 1.2),
+        EffectController(
+          duration: 0.2,
+          reverseDuration: 0.2,
+          curve: Curves.bounceOut,
+        ),
+      ),
+    );
   }
 
   void endGame() {

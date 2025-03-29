@@ -68,6 +68,9 @@ flutter:
     - assets/images/bahador.png
     - assets/images/enemy.png
     - assets/images/arrow.png
+    - assets/images/left_houses.jpeg
+    - assets/images/right_houses.jpeg
+    - assets/images/grass.jpg
     - assets/audio/launch.mp3
     - assets/audio/hit.mp3
     - assets/audio/wall_hit.mp3

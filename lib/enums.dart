@@ -1,6 +1,10 @@
 const gameWidth = 820.0;
 const gameHeight = 1600.0;
 const ballRadius = gameWidth * 0.03;
+
+const wallWidth = 100.0; // عرض دیوارهای کناری
+const playAreaWidth = gameWidth - (2 * wallWidth); // عرض منطقه بازی
+
 const batWidth = gameWidth * 0.2;
 const batHeight = ballRadius * 2;
 const batStep = gameWidth * 0.05;

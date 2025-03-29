@@ -2,6 +2,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
+import 'package:flame/particles.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 
@@ -154,79 +155,88 @@ class Ball extends SpriteAnimationComponent
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final healthBarRect = Rect.fromLTWH(
+    // پس‌زمینه نوار سلامت
+    final healthBarBgRect = Rect.fromLTWH(
       -_healthBarWidth / 2,
-      -height / 2 - 20,
+      -height / 2,
       _healthBarWidth,
-      _healthBarHeight,
+      _healthBarHeight + 10,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(healthBarBgRect, Radius.circular(10)),
+      Paint()..color = Colors.black.withOpacity(0.5),
     );
 
-    canvas.drawRect(healthBarRect, _healthBarBgPaint);
-
+    // نوار سلامت اصلی
     final healthPercentage = health / initialHealth;
     final healthBarFgRect = Rect.fromLTWH(
       -_healthBarWidth / 2,
-      -height / 2 - 20,
+      -height / 2,
       _healthBarWidth * healthPercentage,
-      _healthBarHeight,
+      _healthBarHeight ,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(healthBarFgRect, Radius.circular(2)),
+      Paint()
+        ..shader = LinearGradient(
+          colors: [
+            healthPercentage > 0.6 ? Color(0xFF00FF00) : Colors.green,
+            healthPercentage > 0.3 ? Color(0xFFFFA500) : Colors.orange,
+            Color(0xFFFF0000),
+          ],
+        ).createShader(healthBarFgRect),
     );
 
-    if (healthPercentage > 0.6) {
-      _healthBarFgPaint.color = Colors.green;
-    } else if (healthPercentage > 0.3) {
-      _healthBarFgPaint.color = Colors.orange;
-    } else {
-      _healthBarFgPaint.color = Colors.red;
-    }
-
-    canvas.drawRect(healthBarFgRect, _healthBarFgPaint);
-
-    final textPainter = TextPainter(
+    // متن امتیاز با جلوه سایه
+    final scoreText = TextPainter(
       text: TextSpan(
-        text: health.toString(),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
+        text: '$health',
+        style: TextStyle(
+          fontSize: 24,
           fontWeight: FontWeight.bold,
+          color: Colors.white,
           shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black,
-              offset: Offset(1.0, 1.0),
-            ),
+          Shadow(
+          color: Colors.black,
+          blurRadius: 5,
+          offset: Offset(2, 2),)
           ],
         ),
       ),
       textDirection: TextDirection.ltr,
     );
-    textPainter.layout();
-    textPainter.paint(
+    scoreText.layout();
+    scoreText.paint(
       canvas,
-      Offset(-textPainter.width / 2, -height / 2 - 45),
+      Offset(-scoreText.width / 2, height / 2 - 155),
     );
 
-    final playerText = player == PlayerTurn.player1 ? "YOU" : "ENEMY";
+    // نام بازیکن با انیمیشن
+    final playerText = player == PlayerTurn.player1 ? "You" : "Enemy";
     final playerTextPainter = TextPainter(
       text: TextSpan(
         text: playerText,
         style: TextStyle(
-          color: player == PlayerTurn.player1 ? Colors.blue : Colors.red,
-          fontSize: 24,
+          fontSize: 28,
           fontWeight: FontWeight.bold,
-          // shadows: [
-          // Shadow(
-          // blurRadius: 2.0,
-          // color: Colors.black,
-          // offset: Offset(1.0, 1.0),
-          // ],
+          color: player == PlayerTurn.player1
+              ? Colors.blue.shade300
+              : Colors.red.shade300,
+          shadows: [
+            Shadow(
+              color: Colors.black.withOpacity(0.7),
+              blurRadius: 8,
+              offset: Offset(2, 2),
+            ),
+          ],
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: TextDirection.rtl,
     );
     playerTextPainter.layout();
     playerTextPainter.paint(
       canvas,
-      Offset(-playerTextPainter.width / 2, height / 2 + 10),
+      Offset(-playerTextPainter.width / 2, height - 200),
     );
   }
 
@@ -244,6 +254,7 @@ class Ball extends SpriteAnimationComponent
     }
 
     if (isMoving) {
+
       // به‌روزرسانی جهت حرکت
       if (velocity.x.abs() > velocity.y.abs()) {
         direction = velocity.x > 0 ? Direction.right : Direction.left;
@@ -269,24 +280,28 @@ class Ball extends SpriteAnimationComponent
       }
 
       // برخورد با دیوارها
-      if (position.x - width / 2 <= 0) {
-        position.x = width / 2;
-        velocity.x = -velocity.x;
-        AudioManager.playSound('wall_hit.mp3',0.5);
-      } else if (position.x + width / 2 >= game.size.x) {
-        position.x = game.size.x - width / 2;
-        velocity.x = -velocity.x;
-        AudioManager.playSound('wall_hit.mp3',0.5);
+      if (position.x - width / 2 <= 100) {
+        position.x = 100 + width / 2;
+        velocity.x = -velocity.x * 0.9; // کاهش سرعت پس از برخورد
+        AudioManager.playSound('wall_hit.mp3', 0.5);
+      }
+      // برخورد با دیوار راست (خانه سمت راست)
+      else if (position.x + width / 2 >= game.size.x - 100) {
+        position.x = game.size.x - 100 - width / 2;
+        velocity.x = -velocity.x * 0.9; // کاهش سرعت پس از برخورد
+        AudioManager.playSound('wall_hit.mp3', 0.5);
       }
 
+      // برخورد با دیوارهای بالا و پایین
       if (position.y - height / 2 <= 0) {
         position.y = height / 2;
         velocity.y = -velocity.y;
-        AudioManager.playSound('wall_hit.mp3',0.5);
-      } else if (position.y + height / 2 >= game.size.y) {
+        AudioManager.playSound('wall_hit.mp3', 0.5);
+      }
+      else if (position.y + height / 2 >= game.size.y) {
         position.y = game.size.y - height / 2;
         velocity.y = -velocity.y;
-        AudioManager.playSound('wall_hit.mp3',0.5);
+        AudioManager.playSound('wall_hit.mp3', 0.5);
       }
     }
   }
@@ -341,6 +356,23 @@ class Ball extends SpriteAnimationComponent
         EffectController(duration: 0.1, reverseDuration: 0.1),
       ),
     );
+
+    // add(
+    //   ParticleSystemComponent(
+    //     particle: Particle.generate(
+    //       count: 40,
+    //       generator: (i) => AcceleratedParticle(
+    //         acceleration: Vector2(600, 600),
+    //         speed: Vector2.random() * 100,
+    //         position: position.clone(),
+    //         child: CircleParticle(
+    //           radius: 2,
+    //           paint: Paint()..color = Colors.red,
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 
   void flash() {

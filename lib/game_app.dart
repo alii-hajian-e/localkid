@@ -1,21 +1,10 @@
-import 'dart:async';
-import 'dart:math' as math;
-import 'package:flame/collisions.dart';
-import 'package:flame/components.dart';
-import 'package:flame/effects.dart';
-import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import 'package:flame/sprite.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:gamemvp/brick_breaker.dart';
-import 'package:gamemvp/play_area.dart';
 import 'package:gamemvp/player_won.dart';
 import 'package:gamemvp/welcome_overlay.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'audio_manager.dart';
-import 'ball.dart';
 import 'enums.dart';
 import 'game_over.dart';
 import 'win.dart';
